@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cohort-specific p-tau217–GFAP discordance score calculator for research use.">
+  <title>p-tau217–GFAP Discordance Score Calculator</title>
+  <style>
+    :root {
+      --navy: #173b5d;
+      --blue: #2f6f9f;
+      --blue-soft: #eef5fa;
+      --line: #d7e0e8;
+      --ink: #22313f;
+      --muted: #687786;
+      --paper: #ffffff;
+      --page: #f3f6f8;
+      --danger: #b33b3b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 36px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      background: var(--page);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    .calculator {
+      width: 100%;
+      max-width: 900px;
+      min-width: 0;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid #dce4ea;
+      border-radius: 16px;
+      box-shadow: 0 14px 36px rgba(28, 55, 77, 0.10);
+    }
+
+    header {
+      padding: 30px 34px 26px;
+      color: #fff;
+      text-align: center;
+      background: var(--navy);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(25px, 4vw, 36px);
+      line-height: 1.18;
+    }
+
+    header p {
+      max-width: 690px;
+      margin: 0 auto;
+      color: #dceaf4;
+      font-size: 15px;
+    }
+
+    .content { padding: 28px 34px 32px; }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 5px;
+      margin-bottom: 22px;
+      background: #edf2f6;
+      border-radius: 10px;
+    }
+
+    .tab {
+      min-height: 44px;
+      border: 0;
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 3px 8px rgba(47, 111, 159, 0.24);
+    }
+
+    .formula {
+      margin-bottom: 22px;
+      padding: 15px 18px;
+      color: #29465e;
+      background: var(--blue-soft);
+      border-left: 4px solid var(--blue);
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .formula strong { display: block; margin-bottom: 5px; }
+    .formula div + div { margin-top: 3px; }
+
+    .data-note {
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      color: #5b4529;
+      background: #fff8ed;
+      border: 1px solid #efd5ad;
+      border-left: 4px solid #d9943e;
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    .data-note strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #49351e;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .unit {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .field-help {
+      min-height: 34px;
+      margin: 6px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    input, select {
+      width: 100%;
+      height: 46px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #bcc9d3;
+      border-radius: 7px;
+      font: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: 3px solid rgba(47, 111, 159, 0.16);
+      border-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .action {
+      min-height: 46px;
+      padding: 0 22px;
+      border-radius: 7px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      flex: 1;
+      color: #fff;
+      background: var(--blue);
+      border: 1px solid var(--blue);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #b9c7d1;
+    }
+
+    .error {
+      min-height: 22px;
+      margin: 10px 0 0;
+      color: var(--danger);
+      font-size: 13px;
+    }
+
+    .results {
+      display: none;
+      margin-top: 6px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .results.show { display: block; }
+
+    .results h2 {
+      margin: 0 0 14px;
+      color: var(--navy);
+      font-size: 20px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .result-card {
+      min-height: 105px;
+      padding: 16px;
+      text-align: center;
+      background: #f7f9fb;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+    }
+
+    .result-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .result-card strong {
+      display: block;
+      margin: 7px 0 2px;
+      color: var(--navy);
+      font-size: 25px;
+    }
+
+    .interpretation {
+      margin: 14px 0 0;
+      padding: 13px 15px;
+      color: #28465c;
+      background: var(--blue-soft);
+      border-radius: 7px;
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 16px 24px;
+      color: var(--muted);
+      text-align: center;
+      background: #fafbfc;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    @media (max-width: 650px) {
+      body { padding: 14px; align-items: flex-start; }
+      header { padding: 25px 20px 22px; }
+      .content { padding: 22px 18px 25px; }
+      .form-grid, .result-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .secondary { order: 2; }
+      .formula { overflow-wrap: anywhere; }
+    }
+  </style>
+</head>
+<body>
+  <main class="calculator">
+    <header>
+      <h1>p-tau217–GFAP Discordance Score Calculator</h1>
+      <p>Estimate the expected GFAP level and calculate the standardized deviation of observed GFAP from that expectation.</p>
+    </header>
+
+    <section class="content" aria-label="Score calculator">
+      <div class="tabs" role="tablist" aria-label="Select cohort">
+        <button class="tab active" type="button" role="tab" aria-selected="true" data-cohort="chase">CHASE</button>
+        <button class="tab" type="button" role="tab" aria-selected="false" data-cohort="adni">ADNI</button>
+      </div>
+
+      <div class="data-note" id="data-note" aria-live="polite"></div>
+      <div class="formula" id="formula" aria-live="polite"></div>
+
+      <form id="score-form" novalidate>
+        <div class="form-grid">
+          <div>
+            <label for="ptau">Plasma p-tau217 <span class="unit" id="ptau-unit"></span></label>
+            <input id="ptau" name="ptau" type="number" step="any" inputmode="decimal" required>
+            <p class="field-help" id="ptau-help"></p>
+          </div>
+          <div>
+            <label for="gfap">Plasma GFAP <span class="unit" id="gfap-unit"></span></label>
+            <input id="gfap" name="gfap" type="number" step="any" inputmode="decimal" required>
+            <p class="field-help" id="gfap-help"></p>
+          </div>
+          <div>
+            <label for="age">Age <span class="unit">(years)</span></label>
+            <input id="age" name="age" type="number" step="any" min="18" max="120" inputmode="decimal" required>
+            <p class="field-help">Enter age in years as recorded; no transformation is needed.</p>
+          </div>
+          <div>
+            <label for="sex">Sex</label>
+            <select id="sex" name="sex" required>
+              <option value="">Select</option>
+              <option value="0">Female</option>
+              <option value="1">Male</option>
+            </select>
+          </div>
+          <div>
+            <label for="diagnosis">Baseline diagnosis</label>
+            <select id="diagnosis" name="diagnosis" required>
+              <option value="">Select</option>
+              <option value="0">Cognitively normal (CN)</option>
+              <option value="1">Mild cognitive impairment (MCI)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="action primary" type="submit">Calculate score</button>
+          <button class="action secondary" type="reset">Reset</button>
+        </div>
+        <p class="error" id="error" role="alert"></p>
+      </form>
+
+      <section class="results" id="results" aria-live="polite">
+        <h2>Result</h2>
+        <div class="result-grid">
+          <div class="result-card">
+            <span id="expected-label">Expected GFAP</span>
+            <strong id="expected">—</strong>
+            <span id="expected-unit"></span>
+          </div>
+          <div class="result-card">
+            <span id="residual-label">Observed − expected</span>
+            <strong id="residual">—</strong>
+            <span id="residual-unit"></span>
+          </div>
+          <div class="result-card">
+            <span>Discordance score</span>
+            <strong id="score">—</strong>
+            <span>standard deviations</span>
+          </div>
+        </div>
+        <p class="interpretation" id="interpretation"></p>
+      </section>
+    </section>
+
+    <footer>For research use only. Use the cohort and measurement scale that match the source data. Calculations are performed locally in your browser and are not intended for clinical diagnosis.</footer>
+  </main>
+
+  <script>
+    const models = {
+      chase: {
+        intercept: 5.15537172197003,
+        ptau: 0.237561374214526,
+        age: 0.029301406065517,
+        male: -0.150719952574823,
+        mci: 0.0209969326179436,
+        residualMean: 0.0814000070218726,
+        residualSD: 0.943529495243084,
+        inputUnit: '(raw pg/mL)',
+        expectedUnit: 'pg/mL (back-transformed)',
+        residualUnit: 'log2 units',
+        expectedLabel: 'Expected GFAP',
+        residualLabel: 'Observed − expected (model scale)',
+        dataNote: '<strong>Input data: raw clinical laboratory concentrations</strong>Enter the original p-tau217 and GFAP values reported by the CHASE assay in pg/mL. Do not log-transform or Z-standardize them. This calculator applies the log2 transformation internally.',
+        ptauHelp: 'Use the original positive concentration in pg/mL; do not enter log2 or standardized values.',
+        gfapHelp: 'Use the original positive concentration in pg/mL; do not enter log2 or standardized values.',
+        ptauPlaceholder: 'e.g., 1.00',
+        gfapPlaceholder: 'e.g., 100',
+        formula: '<strong>CHASE model</strong><div>Expected log2 GFAP = 5.1554 + 0.2376 × log2(p-tau217) + 0.0293 × age − 0.1507 × male + 0.0210 × MCI</div><div>Score = [log2(observed GFAP) − expected log2 GFAP − 0.0814] / 0.9435</div>'
+      },
+      adni: {
+        intercept: 6.12422411854482,
+        ptau: 0.468519518792123,
+        age: 0.0236525987438984,
+        male: -0.292551412333997,
+        mci: 0.0184956179956952,
+        residualMean: -0.00162650540394437,
+        residualSD: 0.629118178898282,
+        inputUnit: '(platform-reported NPQ)',
+        expectedUnit: 'NPQ',
+        residualUnit: 'NPQ units',
+        expectedLabel: 'Expected GFAP NPQ',
+        residualLabel: 'Observed − expected (NPQ scale)',
+        dataNote: '<strong>Input data: NULISA platform-normalized NPQ</strong>Enter pTau-217 and GFAP NPQ exactly as provided by the NULISA CNS Disease Panel. NPQ is already normalized and reported on a log2 scale. Do not enter pg/mL values, and do not log-transform or Z-standardize NPQ again.',
+        ptauHelp: 'Use the platform-reported pTau-217 NPQ, not a raw concentration or a Z score.',
+        gfapHelp: 'Use the platform-reported GFAP NPQ, not a raw concentration or a Z score.',
+        ptauPlaceholder: 'e.g., 11.0',
+        gfapPlaceholder: 'e.g., 13.0',
+        formula: '<strong>ADNI model</strong><div>Expected GFAP NPQ = 6.1242 + 0.4685 × p-tau217 NPQ + 0.0237 × age − 0.2926 × male + 0.0185 × MCI</div><div>Score = [observed GFAP NPQ − expected GFAP NPQ + 0.0016] / 0.6291</div>'
+      }
+    };
+
+    let cohort = 'chase';
+    const form = document.getElementById('score-form');
+    const tabs = document.querySelectorAll('.tab');
+    const dataNote = document.getElementById('data-note');
+    const formula = document.getElementById('formula');
+    const ptauInput = document.getElementById('ptau');
+    const gfapInput = document.getElementById('gfap');
+    const ptauUnit = document.getElementById('ptau-unit');
+    const gfapUnit = document.getElementById('gfap-unit');
+    const ptauHelp = document.getElementById('ptau-help');
+    const gfapHelp = document.getElementById('gfap-help');
+    const expectedLabel = document.getElementById('expected-label');
+    const residualLabel = document.getElementById('residual-label');
+    const expectedUnit = document.getElementById('expected-unit');
+    const residualUnit = document.getElementById('residual-unit');
+    const results = document.getElementById('results');
+    const error = document.getElementById('error');
+
+    function renderCohort() {
+      const model = models[cohort];
+      dataNote.innerHTML = model.dataNote;
+      formula.innerHTML = model.formula;
+      ptauUnit.textContent = model.inputUnit;
+      gfapUnit.textContent = model.inputUnit;
+      ptauHelp.textContent = model.ptauHelp;
+      gfapHelp.textContent = model.gfapHelp;
+      ptauInput.placeholder = model.ptauPlaceholder;
+      gfapInput.placeholder = model.gfapPlaceholder;
+      if (cohort === 'chase') {
+        ptauInput.setAttribute('min', '0.0000001');
+        gfapInput.setAttribute('min', '0.0000001');
+      } else {
+        ptauInput.removeAttribute('min');
+        gfapInput.removeAttribute('min');
+      }
+      expectedLabel.textContent = model.expectedLabel;
+      residualLabel.textContent = model.residualLabel;
+      expectedUnit.textContent = model.expectedUnit;
+      residualUnit.textContent = model.residualUnit;
+      tabs.forEach((tab) => {
+        const active = tab.dataset.cohort === cohort;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', String(active));
+      });
+      form.reset();
+      error.textContent = '';
+      results.classList.remove('show');
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        cohort = tab.dataset.cohort;
+        renderCohort();
+      });
+    });
+
+    form.addEventListener('reset', () => {
+      error.textContent = '';
+      results.classList.remove('show');
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const model = models[cohort];
+      const pRaw = ptauInput.value.trim();
+      const gRaw = gfapInput.value.trim();
+      const ageRaw = document.getElementById('age').value.trim();
+      const sexRaw = document.getElementById('sex').value;
+      const diagnosisRaw = document.getElementById('diagnosis').value;
+      const p = Number(pRaw);
+      const g = Number(gRaw);
+      const age = Number(ageRaw);
+      const male = Number(sexRaw);
+      const mci = Number(diagnosisRaw);
+      const valuesPresent = pRaw !== '' && gRaw !== '' && ageRaw !== '' && sexRaw !== '' && diagnosisRaw !== '';
+      const scaleValid = cohort === 'chase' ? p > 0 && g > 0 : true;
+
+      if (!valuesPresent || ![p, g, age, male, mci].every(Number.isFinite) || !scaleValid || age < 18 || age > 120) {
+        error.textContent = cohort === 'chase'
+          ? 'Enter positive raw p-tau217 and GFAP concentrations in pg/mL, together with all clinical fields.'
+          : 'Enter platform-reported pTau-217 and GFAP NPQ values, together with all clinical fields.';
+        results.classList.remove('show');
+        return;
+      }
+
+      const pTerm = cohort === 'chase' ? Math.log2(p) : p;
+      const observed = cohort === 'chase' ? Math.log2(g) : g;
+      const expectedModelScale = model.intercept + model.ptau * pTerm + model.age * age + model.male * male + model.mci * mci;
+      const residual = observed - expectedModelScale;
+      const score = (residual - model.residualMean) / model.residualSD;
+      const expectedDisplay = cohort === 'chase' ? 2 ** expectedModelScale : expectedModelScale;
+
+      document.getElementById('expected').textContent = expectedDisplay.toFixed(cohort === 'chase' ? 2 : 3);
+      document.getElementById('residual').textContent = residual.toFixed(3);
+      document.getElementById('score').textContent = score.toFixed(3);
+
+      const direction = score > 0 ? 'higher' : score < 0 ? 'lower' : 'equal';
+      const magnitude = Math.abs(score).toFixed(2);
+      const scaleStatement = cohort === 'chase'
+        ? 'The submitted biomarker values were treated as raw pg/mL and log2-transformed internally.'
+        : 'The submitted biomarker values were treated as platform-reported NPQ without additional transformation.';
+      document.getElementById('interpretation').textContent = score === 0
+        ? `Observed GFAP matches the cohort-specific expected level. ${scaleStatement}`
+        : `Observed GFAP is ${magnitude} SD ${direction} than the cohort-specific expected level. ${scaleStatement} The score should be interpreted as a continuous research measure.`;
+
+      error.textContent = '';
+      results.classList.add('show');
+      results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    renderCohort();
+  </script>
+</body>
+</html>
